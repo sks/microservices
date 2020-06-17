@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.github.sks.microservices.featureflags";
+option java_outer_classname = "FeatureFlags";
+option go_package = "internal/featureflag";
+
+package featureflag;
+
+// The service to get the flags value
+service Service {
+  // get a flag value
+  rpc GetFlag (GetFlagRequest) returns (GetFlagResponse) {}
+}
+
+// The request message containing the user's name.
+message GetFlagRequest {
+  string key = 1;
+  string tenant_id = 2;
+}
+
+// The response message containing the greetings
+message GetFlagResponse {
+  string value = 1;
+}
