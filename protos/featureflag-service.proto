@@ -11,6 +11,7 @@ package featureflag;
 service Service {
   // get a flag value
   rpc GetFlag (GetFlagRequest) returns (GetFlagResponse) {}
+  rpc CreateFlag(CreateFlagRequest) returns (CreateFlagResponse) {}
 }
 
 // The request message containing the user's name.
@@ -22,4 +23,15 @@ message GetFlagRequest {
 // The response message containing the greetings
 message GetFlagResponse {
   string value = 1;
+}
+
+
+message CreateFlagRequest {
+  string key = 1;
+  string value = 2;
+  string tenant_id = 3;
+  string description = 4;
+}
+
+message CreateFlagResponse {
 }
