@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "google/api/annotations.proto";
+
 option java_multiple_files = true;
 option java_package = "io.github.sks.microservices.featureflags";
 option java_outer_classname = "FeatureFlags";
@@ -10,8 +12,17 @@ package featureflag;
 // The service to get the flags value
 service Service {
   // get a flag value
-  rpc GetFlag (GetFlagRequest) returns (GetFlagResponse) {}
-  rpc CreateFlag(CreateFlagRequest) returns (CreateFlagResponse) {}
+  rpc GetFlag (GetFlagRequest) returns (GetFlagResponse) {
+    option (google.api.http) = {
+      get: "/v1/featureflag"
+    };
+  }
+  rpc CreateFlag(CreateFlagRequest) returns (CreateFlagResponse) {
+    option (google.api.http) = {
+      post: "/v1/featureflag"
+      body: "*"
+    };
+  }
 }
 
 // The request message containing the user's name.

@@ -11,7 +11,7 @@ import (
 // NewLogger create a new logging module
 func NewLogger(envfx env.Environment) (logger *zap.Logger, err error) {
 	logger, err = zap.NewProduction()
-	if err == nil || envfx.GetEnv() == env.DEV || envfx.IsDebugEnabled() {
+	if err != nil || envfx.GetEnv() == env.DEV || envfx.IsDebugEnabled() {
 		logger, err = zap.NewDevelopment()
 	}
 	if err != nil {

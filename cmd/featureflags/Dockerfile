@@ -1,3 +1,5 @@
+ARG VERSION=unknown
+
 FROM golang:alpine as builder
 
 WORKDIR /go/src/github.com/sks/microservices
@@ -10,6 +12,10 @@ RUN go build \
 
 FROM alpine
 
+ARG VERSION
+
 COPY --from=builder /tmp/featureflags /bin/featureflags
+
+ENV VERSION=${VERSION}
 
 ENTRYPOINT [ "/bin/featureflags" ]

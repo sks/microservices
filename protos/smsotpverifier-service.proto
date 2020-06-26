@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+
+option java_multiple_files = true;
+option java_package = "io.github.sks.microservices.smsotpverifier";
+option java_outer_classname = "SMSOTPVerifier";
+option go_package = "internal/smsotpverifier";
+
+package smsotpverifier;
+
+// The service to get the flags value
+service Service {
+  // get a flag value
+  rpc SendOTP (SendOTPRequest) returns (SendOTPResponse) {
+    option (google.api.http) = {
+      post: "/v1/startverification"
+      body: "*"
+    };
+  }
+  rpc VerifyOTP(VerifyOTPRequest) returns (VerifyOTPResponse) {
+    option (google.api.http) = {
+      post: "/v1/verify"
+      body: "*"
+    };
+  }
+}
+
+// The request message containing the user's name.
+message SendOTPRequest {
+  string toNumber = 1;
+  string message = 2;
+  string fromNumber = 3;
+  uint32 maxAttempts = 4;
+  uint32 validForMinutes = 5;
+}
+
+// The response message containing the greetings
+message SendOTPResponse {
+  string uuid = 1;
+  string message = 2;
+}
+
+
+message VerifyOTPRequest {
+  string uuid = 1;
+  string otp = 2;
+}
+
+message VerifyOTPResponse {
+  string message = 1;
+  uint32 attemptCount = 2;
+}

@@ -2,11 +2,13 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/jinzhu/gorm"
 	// postgres connection dialect
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/sks/microservices/internal/env"
+	"github.com/sks/microservices/internal/fnhelper"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -31,9 +33,14 @@ type Out struct {
 // Module ...
 func Module(in In) (Out, error) {
 	logger := in.Logger.Named("repository")
-	db, err := gorm.
-		Open("postgres",
+	var db *gorm.DB
+	err := fnhelper.Retry(func() error {
+		var err error
+		logger.Debug("connecting to DB")
+		db, err = gorm.Open("postgres",
 			in.EnvFx.GetValOrDefault("PG_CONNECTION_STRING", localhostPGConnectionString))
+		return err
+	}, 3, 30*time.Second)
 	if err != nil {
 		return Out{}, err
 	}

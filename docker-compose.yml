@@ -1,6 +1,40 @@
 version: "3.8"
 services:
-  database:
+  smsotpverifier:
+    build:
+        context: .
+        dockerfile: ./cmd/smsotpverifier/Dockerfile
+    environment: 
+        PORT: 7001
+        PG_CONNECTION_STRING: host=db port=5432 user=postgres dbname=postgres password=password sslmode=disable
+        SMS_PROVIDER: ${SMS_PROVIDER}
+        D7SMS_USERNAME: ${D7SMS_USERNAME}
+        D7SMS_PASSWORD: ${D7SMS_PASSWORD}
+        HEALTH_PORT: 9991
+        GW_PORT: 7002
+        ENVIRONMENT: ${ENVIRONMENT}
+    ports: 
+        - 7001:7001
+        - 7002:7002
+        - 9991:9991
+    links:
+        - "db"
+        - "featureflags"
+  featureflags:
+    build:
+        context: .
+        dockerfile: ./cmd/featureflags/Dockerfile
+    environment:
+        PORT: 7000
+        PG_CONNECTION_STRING: host=db port=5432 user=postgres dbname=postgres password=password sslmode=disable
+        HEALTH_PORT: 9999
+        ENVIRONMENT: ${ENVIRONMENT}
+    ports: 
+        - 7000:7000
+        - 9990:9999
+    links:
+        - "db"
+  db:
     image: postgres:alpine
     environment: 
         - POSTGRES_PASSWORD=password

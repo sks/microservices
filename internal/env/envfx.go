@@ -1,6 +1,9 @@
 package env
 
-import "os"
+import (
+	"os"
+	"strings"
+)
 
 // Env denotes the environment in which the app is running
 type Env int
@@ -21,6 +24,7 @@ type Environment interface {
 	GetEnv() Env
 	GetAppName() string
 	IsDebugEnabled() bool
+	GetRequiredEnvVar(key string) (string, error)
 	GetValOrDefault(key, defaultValue string) string
 }
 
@@ -33,12 +37,13 @@ func NewEnvFx() Environment {
 }
 
 func (e *env) GetEnv() Env {
-	switch os.Getenv("ENVIRONMENT") {
-	case "PROD":
+	env := os.Getenv("ENVIRONMENT")
+	switch strings.ToLower(env) {
+	case "prod":
 		return PRODUCTION
-	case "STAGING":
+	case "staging":
 		return STAGING
-	case "TESTING":
+	case "testing":
 		return TESTING
 	default:
 		return DEV
@@ -63,4 +68,12 @@ func (e *env) GetValOrDefault(key, defaultValue string) string {
 		return val
 	}
 	return defaultValue
+}
+
+func (e *env) GetRequiredEnvVar(key string) (string, error) {
+	val := os.Getenv(key)
+	if val != "" {
+		return val, nil
+	}
+	return "", NewMissingRequiredEnv(key)
 }
