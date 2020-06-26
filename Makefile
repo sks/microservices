@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := all
 
-all: proto build
+all: grpc build
 
 COMMIT_SHA := $(shell git rev-parse --short=7 HEAD)
 GIT_DIRTY  := $(shell test -n "`git status --porcelain`" && echo "-dirty" || echo "")
@@ -34,4 +34,4 @@ build-%:
 		-f cmd/$*/Dockerfile \
 		-t $*:$(DOCKER_TAG) .
 
-build: grpc build-featureflags build-smsotpverifier
+build: build-featureflags build-smsotpverifier

@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+    # Publish `v1.2.3` tags as releases.
+    tags:
+      - v*
+
+  # Run tests for any PRs.
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build images
+        run: make build
+      - name: docker-compose works
+        run: docker-compose build
+  push:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build image
+        run: make build
+      - name: Push to GitHub Packages
+        uses: docker/build-push-action@v1
+        with:
+          dockerfile: cmd/featureflags/Dockerfile
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: docker.pkg.github.com
+          repository: sks/microservices/featureflags
+          tag_with_ref: true
+      - name: Push to GitHub Packages
+        uses: docker/build-push-action@v1
+        with:
+          dockerfile: cmd/smsotpverifier/Dockerfile
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: docker.pkg.github.com
+          repository: sks/microservices/smsotpverifier
+          tag_with_ref: true
