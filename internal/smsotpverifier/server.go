@@ -19,9 +19,9 @@ func (s *server) SendOTP(ctx context.Context, req *SendOTPRequest) (*SendOTPResp
 	if err != nil {
 		return nil, err
 	}
-	err = s.smsAdapter.SendSMS(ctx, req.ToNumber,
+	err = s.smsAdapter.SendSMS(ctx, req.To,
 		fmt.Sprintf("%s: \nOTP: %s", req.Message, otpRequest.OTP),
-		req.FromNumber)
+		req.From)
 	if err != nil {
 		return nil, err
 	}
@@ -33,13 +33,13 @@ func (s *server) SendOTP(ctx context.Context, req *SendOTPRequest) (*SendOTPResp
 
 func (s *server) VerifyOTP(ctx context.Context, req *VerifyOTPRequest) (*VerifyOTPResponse, error) {
 	otpRequest := OTPRequest{}
-	err := s.db.Where("id=?", req.GetUuid).Find(&otpRequest).Error
+	err := s.db.Where("id=?", req.GetUuid()).Find(&otpRequest).Error
 	if err != nil {
 		return nil, err
 	}
 
 	err = otpRequest.Validate(req.Otp)
-	er := s.db.Model(&otpRequest).Update("attempts", otpRequest.Attempts).Error
+	er := s.db.Model(&otpRequest).Update("attempts", otpRequest.Attempts+1).Error
 	if er != nil {
 		s.logger.Error("Error updating the attempt count", zap.Error(err), zap.String("otp", otpRequest.String()))
 	}

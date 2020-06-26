@@ -6,6 +6,9 @@ import (
 	"net"
 	"net/http"
 
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
+	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/sks/microservices/internal/env"
 	"go.uber.org/fx"
@@ -37,7 +40,21 @@ func Module(in In) (Out, error) {
 	logger := in.Logger.Named("grpcserver").With(
 		zap.String("port", port),
 		zap.String("gateway_port", gwPort))
-	grpcServer := grpc.NewServer()
+	opts := []grpc_zap.Option{
+		grpc_zap.WithLevels(grpc_zap.DefaultCodeToLevel),
+	}
+	// Make sure that log statements internal to gRPC library are logged using the zapLogger as well.
+	grpc_zap.ReplaceGrpcLoggerV2(logger)
+	grpcServer := grpc.NewServer(
+		grpc_middleware.WithUnaryServerChain(
+			grpc_ctxtags.UnaryServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
+			grpc_zap.UnaryServerInterceptor(logger, opts...),
+		),
+		grpc_middleware.WithStreamServerChain(
+			grpc_ctxtags.StreamServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
+			grpc_zap.StreamServerInterceptor(logger, opts...),
+		),
+	)
 	muxServer := runtime.NewServeMux()
 	in.Lifecycle.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {

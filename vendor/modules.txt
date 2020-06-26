@@ -12,6 +12,13 @@ github.com/golang/protobuf/ptypes/wrappers
 # github.com/google/uuid v1.1.1
 ## explicit
 github.com/google/uuid
+# github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
+## explicit
+github.com/grpc-ecosystem/go-grpc-middleware
+github.com/grpc-ecosystem/go-grpc-middleware/logging
+github.com/grpc-ecosystem/go-grpc-middleware/logging/zap
+github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap
+github.com/grpc-ecosystem/go-grpc-middleware/tags
 # github.com/grpc-ecosystem/grpc-gateway v1.14.6
 ## explicit
 github.com/grpc-ecosystem/grpc-gateway/internal

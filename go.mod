@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/golang/protobuf v1.4.1
 	github.com/google/uuid v1.1.1
+	github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
 	github.com/grpc-ecosystem/grpc-gateway v1.14.6
 	github.com/jinzhu/gorm v1.9.13
 	go.uber.org/fx v1.12.0

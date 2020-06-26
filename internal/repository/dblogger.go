@@ -7,5 +7,5 @@ type dblogger struct {
 }
 
 func (d *dblogger) Print(v ...interface{}) {
-	d.logger.Debug("db log", zap.Any("message", v))
+	d.logger.Info("db log", zap.Any("message", v))
 }

@@ -28,9 +28,9 @@ service Service {
 
 // The request message containing the user's name.
 message SendOTPRequest {
-  string toNumber = 1;
+  string to = 1;
   string message = 2;
-  string fromNumber = 3;
+  string from = 3;
   uint32 maxAttempts = 4;
   uint32 validForMinutes = 5;
 }

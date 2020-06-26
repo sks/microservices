@@ -31,7 +31,7 @@ type out struct {
 // Module create the sms sending module
 func Module(i in) (ServiceServer, error) {
 	logger := i.Logger.Named("sms_otp_verifier")
-	adapter, err := getSMSAdapter(i.Env)
+	adapter, err := getSMSAdapter(i.Env, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func Module(i in) (ServiceServer, error) {
 	return srvr, nil
 }
 
-func getSMSAdapter(e env.Environment) (Adapter, error) {
+func getSMSAdapter(e env.Environment, logger *zap.Logger) (Adapter, error) {
 	smsProvider, err := e.GetRequiredEnvVar("SMS_PROVIDER")
 	if err != nil {
 		return nil, err
@@ -62,7 +62,8 @@ func getSMSAdapter(e env.Environment) (Adapter, error) {
 	case "d7sms":
 		return NewD7SMSProvider(
 			e.GetValOrDefault("D7SMS_USERNAME", ""),
-			e.GetValOrDefault("D7SMS_PASSWORD", ""))
+			e.GetValOrDefault("D7SMS_PASSWORD", ""),
+			logger)
 	default:
 		return nil, fmt.Errorf("Could not create an SMS adapter for the provider %s", smsProvider)
 	}

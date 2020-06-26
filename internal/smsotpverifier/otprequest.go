@@ -51,10 +51,17 @@ func newOTPRequest(req *SendOTPRequest) (*OTPRequest, error) {
 		ID:              uuid.New().String(),
 		Base:            models.NewBase("admin"),
 		Attempts:        0,
-		MaxAttempts:     req.MaxAttempts,
-		ValidForMinutes: req.ValidForMinutes,
+		MaxAttempts:     getValOrDefault(req.MaxAttempts, 3),
+		ValidForMinutes: getValOrDefault(req.ValidForMinutes, 3),
 		OTP:             otp,
 	}, nil
+}
+
+func getValOrDefault(val, defaultVal uint32) uint32 {
+	if val != 0 {
+		return val
+	}
+	return defaultVal
 }
 
 // Validate validate if the given otp is a match
@@ -75,7 +82,7 @@ func (o OTPRequest) HasExpired() error {
 	if o.Attempts >= o.MaxAttempts {
 		return ErrMaximumAttemptsExceeded
 	}
-	if o.CreatedOn.Add(time.Duration(o.ValidForMinutes) * time.Minute).After(time.Now()) {
+	if o.CreatedOn.Add(time.Duration(o.ValidForMinutes) * time.Minute).Before(time.Now()) {
 		return ErrOTPExpired
 	}
 	return nil
