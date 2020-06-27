@@ -22,6 +22,7 @@ func main() {
 			logging.NewLogger,
 			smsotpverifier.Module,
 			grpcserver.Module,
+			grpcserver.GatewayModule,
 			repository.Module,
 			health.Module,
 		),

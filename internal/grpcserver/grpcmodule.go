@@ -4,12 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"net/http"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/sks/microservices/internal/env"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -25,17 +23,9 @@ type In struct {
 	Shutdowner fx.Shutdowner
 }
 
-// Out ...
-type Out struct {
-	fx.Out
-	GRPCServer         *grpc.Server
-	MuxServer          *runtime.ServeMux
-	GRPCServerEndpoint string `name:"grpc_server_endpoint"`
-}
-
 // Module create a new port listener
-func Module(in In) (Out, error) {
-	port := in.Envfx.GetValOrDefault("PORT", "7000")
+func Module(in In) (*grpc.Server, error) {
+	port := getGRPCPort(in.Envfx)
 	gwPort := in.Envfx.GetValOrDefault("GW_PORT", "7001")
 	logger := in.Logger.Named("grpcserver").With(
 		zap.String("port", port),
@@ -55,7 +45,6 @@ func Module(in In) (Out, error) {
 			grpc_zap.StreamServerInterceptor(logger, opts...),
 		),
 	)
-	muxServer := runtime.NewServeMux()
 	in.Lifecycle.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			listener, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
@@ -71,7 +60,6 @@ func Module(in In) (Out, error) {
 					in.Shutdowner.Shutdown()
 				}
 			}()
-			go http.ListenAndServe(fmt.Sprintf(":%s", gwPort), muxServer)
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
@@ -80,9 +68,9 @@ func Module(in In) (Out, error) {
 			return nil
 		},
 	})
-	return Out{
-		GRPCServer:         grpcServer,
-		MuxServer:          muxServer,
-		GRPCServerEndpoint: fmt.Sprintf("localhost:%s", port),
-	}, nil
+	return grpcServer, nil
+}
+
+func getGRPCPort(env env.Environment) string {
+	return env.GetValOrDefault("PORT", "7000")
 }

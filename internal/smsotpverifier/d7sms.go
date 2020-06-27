@@ -5,10 +5,10 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
+	"github.com/sks/microservices/internal/httputil"
 	"go.uber.org/zap"
 )
 
@@ -47,20 +47,16 @@ func (d *D7SMS) SendSMS(ctx context.Context, to, message, from string) error {
 	if err != nil {
 		return err
 	}
+	req = req.WithContext(ctx)
 	req.Header.Add("authorization", fmt.Sprintf("Basic %s", d.authHeader))
 	req.Header.Add("content-type", "application/x-www-form-urlencoded")
 	req.Header.Add("accept", "application/json")
 
-	res, err := http.DefaultClient.Do(req)
+	body, statusCode, err := httputil.GetResponse(req)
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return err
-	}
-	if res.StatusCode != http.StatusOK {
+	if statusCode != http.StatusOK {
 		return errors.New(string(body))
 	}
 	logger.Debug("Done with sending sms", zap.String("Response", string(body)))
